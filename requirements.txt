@@ -1,0 +1,32 @@
+requests
+openai
+addict
+#opencv-python==4.10.0.84
+#opencv-python-headless==4.10.0.84
+#opencv-contrib-python
+pyarrow>=14.0.1
+modelscope
+#datasets==2.14.5
+datasets>=2.13.0
+scikit-image
+numpy>=1.26.3
+cryptography>=43.0.1
+pycryptodome>=3.21.0
+oss2
+google-genai
+Pillow
+html2image
+PyOpenGL
+PyOpenGL_accelerate
+onnx
+onnxruntime
+
+markdown
+playwright
+beautifulsoup4
+
+#直接复制SOFT包
+#alibabacloud_imageseg20191230>=3.0.0, <4.0.0
+#alibabacloud_tea_openapi>=0.3.8, <1.0.0
+#alibabacloud_tea_console>=0.0.1, <1.0.0
+#alibabacloud_tea_util>=0.3.11, <1.0.0

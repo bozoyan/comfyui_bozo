@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>多图查看器</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .gallery-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #333;
+        }
+        
+        .gallery-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .gallery-counter {
+            font-size: 14px;
+        }
+        
+        .gallery-main {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gallery-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .gallery-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1;
+        }
+        
+        .gallery-slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+        
+        .gallery-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: zoom-in;
+        }
+        
+        .gallery-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.3s;
+        }
+        
+        .gallery-nav:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .gallery-prev {
+            left: 20px;
+        }
+        
+        .gallery-next {
+            right: 20px;
+        }
+        
+        .gallery-thumbnail {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .gallery-thumbnail.active {
+            border-color: #fff;
+            transform: scale(1.1);
+        }
+        
+        /* 全屏查看模式 */
+        .fullscreen-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .fullscreen-view.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .fullscreen-image {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        
+        .fullscreen-view.active .fullscreen-image {
+            transform: scale(1);
+        }
+        
+        .fullscreen-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .fullscreen-close:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <div class="gallery-header">
+            <div class="gallery-title">图片查看器</div>
+            <div class="gallery-counter">图片 <span id="current-index">1</span> / <span id="total-count">0</span></div>
+        </div>
+        
+        <div class="gallery-main">
+            <div class="gallery-content" id="gallery-content">
+                <!-- 图片将通过JavaScript动态添加 -->
+            </div>
+            
+            <button class="gallery-nav gallery-prev" id="prev-btn">&lt;</button>
+            <button class="gallery-nav gallery-next" id="next-btn">&gt;</button>
+        </div>
+        
+        <div class="gallery-controls" id="thumbnails-container">
+            <!-- 缩略图将通过JavaScript动态添加 -->
+        </div>
+    </div>
+    
+    <div class="fullscreen-view" id="fullscreen-view">
+        <img src="" alt="全屏查看" class="fullscreen-image" id="fullscreen-image">
+        <button class="fullscreen-close" id="fullscreen-close">×</button>
+    </div>
+    
+    <script>
+        // 图片数据将由后端注入
+        const images = {{image_urls}};
+        
+        // 初始化变量
+        let currentIndex = 0;
+        const galleryContent = document.getElementById('gallery-content');
+        const thumbnailsContainer = document.getElementById('thumbnails-container');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalCountEl = document.getElementById('total-count');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const fullscreenView = document.getElementById('fullscreen-view');
+        const fullscreenImage = document.getElementById('fullscreen-image');
+        const fullscreenClose = document.getElementById('fullscreen-close');
+        
+        // 更新计数器
+        totalCountEl.textContent = images.length;
+        
+        // 初始化图库
+        function initGallery() {
+            // 创建所有幻灯片
+            images.forEach((src, index) => {
+                // 创建幻灯片
+                const slide = document.createElement('div');
+                slide.className = `gallery-slide ${index === 0 ? 'active' : ''}`;
+                slide.dataset.index = index;
+                
+                // 创建图片
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = `图片 ${index + 1}`;
+                img.className = 'gallery-image';
+                img.addEventListener('click', () => openFullscreen(src));
+                
+                slide.appendChild(img);
+                galleryContent.appendChild(slide);
+                
+                // 创建缩略图
+                const thumbnail = document.createElement('img');
+                thumbnail.src = src;
+                thumbnail.alt = `缩略图 ${index + 1}`;
+                thumbnail.className = `gallery-thumbnail ${index === 0 ? 'active' : ''}`;
+                thumbnail.addEventListener('click', () => goToSlide(index));
+                
+                thumbnailsContainer.appendChild(thumbnail);
+            });
+        }
+        
+        // 切换到指定幻灯片
+        function goToSlide(index) {
+            // 更新当前索引
+            currentIndex = index;
+            currentIndexEl.textContent = currentIndex + 1;
+            
+            // 更新幻灯片
+            const slides = document.querySelectorAll('.gallery-slide');
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+                if (parseInt(slide.dataset.index) === currentIndex) {
+                    slide.classList.add('active');
+                }
+            });
+            
+            // 更新缩略图
+            const thumbnails = document.querySelectorAll('.gallery-thumbnail');
+            thumbnails.forEach((thumb, idx) => {
+                thumb.classList.toggle('active', idx === currentIndex);
+            });
+        }
+        
+        // 上一张图片
+        function prevSlide() {
+            const newIndex = (currentIndex - 1 + images.length) % images.length;
+            goToSlide(newIndex);
+        }
+        
+        // 下一张图片
+        function nextSlide() {
+            const newIndex = (currentIndex + 1) % images.length;
+            goToSlide(newIndex);
+        }
+        
+        // 打开全屏查看
+        function openFullscreen(src) {
+            fullscreenImage.src = src;
+            fullscreenView.classList.add('active');
+        }
+        
+        // 关闭全屏查看
+        function closeFullscreen() {
+            fullscreenView.classList.remove('active');
+        }
+        
+        // 添加事件监听器
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        fullscreenClose.addEventListener('click', closeFullscreen);
+        
+        // 添加键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            if (fullscreenView.classList.contains('active')) {
+                // 全屏模式下的快捷键
+                if (e.key === 'Escape') {
+                    closeFullscreen();
+                }
+            } else {
+                // 正常模式下的快捷键
+                if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                } else if (e.key === 'ArrowRight') {
+                    nextSlide();
+                } else if (e.key === 'Escape') {
+                    window.close();
+                }
+            }
+        });
+        
+        // 初始化图库
+        initGallery();
+    </script>
+</body>
+</html>

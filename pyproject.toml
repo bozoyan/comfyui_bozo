@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-bozo"
+description = "A custom node for ComfyUI to parse and extract data from JSON strings."
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/bozoyan/Comfyui-Bozo"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "bozoyan"
+DisplayName = "Comfyui-Bozo"
+Icon = ""
