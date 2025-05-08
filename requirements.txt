@@ -1,13 +1,12 @@
 requests
 openai
 addict
-#opencv-python==4.10.0.84
+#opencv-python==4.10.0.84  4.11.0.86
 #opencv-python-headless==4.10.0.84
 #opencv-contrib-python
 pyarrow>=14.0.1
-modelscope
-#datasets==2.14.5
-datasets>=2.13.0
+modelscope==1.9.5
+#datasets==2.13.0 2.14.5 
 scikit-image
 numpy>=1.26.3
 cryptography>=43.0.1

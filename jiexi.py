@@ -31,8 +31,8 @@ class ImagePathLoader:
             }
         }
     
-    RETURN_TYPES = ("IMAGE", "STRING",)
-    RETURN_NAMES = ("image", "image_path",)
+    RETURN_TYPES = ("IMAGE", "STRING", "INT", "INT",)
+    RETURN_NAMES = ("image", "image_path", "width", "height",)
     FUNCTION = "load_image"
     CATEGORY = "BOZO/PIC"
     
@@ -75,14 +75,14 @@ class ImagePathLoader:
                 image_path = self.download_image(image_url)
                 if not image_path:
                     print("下载图片失败")
-                    return (None, "")
+                    return (None, "", 0, 0)
             else:
                 # 使用本地图片
                 image_path = folder_paths.get_annotated_filepath(image)
             
             if not os.path.exists(image_path):
                 print(f"警告: 文件不存在 {image_path}")
-                return (None, "")
+                return (None, "", 0, 0)
             
             # 加载图像
             i = Image.open(image_path)
@@ -91,11 +91,13 @@ class ImagePathLoader:
             image = np.array(image).astype(np.float32) / 255.0
             image = torch.from_numpy(image)[None,]
             
-            return (image, image_path)
+            # 获取图片尺寸
+            width, height = i.size
+            return (image, image_path, width, height)
             
         except Exception as e:
             print(f"加载图像失败: {str(e)}")
-            return (None, "")
+            return (None, "", 0, 0)
 
 class PNGInfoReader:
     """读取 PNG 图片中的元数据信息"""
@@ -289,7 +291,7 @@ class ImageJiexi:
                     "label": "模型名称"
                 }),
                 "prompt_template": ("STRING", {
-                    "default": "You are an AI art prompt expert. Upon receiving a provided image, you are capable of clearly, accurately and elaborately describing all key elements of the image in English. You can comprehensively provide English prompts regarding aspects such as the style, the subject, the scene, the details, and the color. Your prompts are capable of guiding StableDiffusion or Midjourney models to generate images that closely match the desired output. You only need to give a Prompt for AI Art Generation, no other Image Description and Prompt Analysis is required.",
+                    "default": "You are an AI art prompt expert. Upon receiving a provided image, you are capable of clearly, accurately and elaborately describing all key elements of the image in English. You can comprehensively provide English prompts regarding aspects such as the style, the subject, the scene, the details, and the color. Your prompts are capable of guiding StableDiffusion or Midjourney models to generate images that closely match the desired output. You only need to give a Prompt for AI Art Generation, no other Image Description and Prompt Analysis is required.Do not include the string 'plaintext' or 'prompt'.",
                     "multiline": True,
                     "label": "提示词模板"
                 })

@@ -148,7 +148,6 @@ class Bhebin:
             print(f"合并错误: {str(e)}")
             return ("",)
 
-
 class BOZO_LLM_Node:
     def __init__(self):
         try:
@@ -339,4 +338,104 @@ class BozoPrintOS:
             print(f"读取系统变量错误: {str(e)}")
             return (f"错误: {str(e)}",)
 
+class BOZO_Node:
+    def __init__(self):
+        try:
+            # 修改API密钥文件路径
+            api_key_path = os.path.join(os.path.dirname(__file__), 'key', 'modelscope_api_key.txt')
+            with open(api_key_path, 'r') as f:
+                self.api_key = f.read().strip()
+            if not self.api_key:
+                print("API key 文件为空")
+                self.api_key = None
+        except Exception as e:
+            print(f"读取 API key 文件失败: {str(e)}")
+            self.api_key = None
 
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "model": ("STRING", {
+                    "default": "Qwen/Qwen3-235B-A22B",
+                    "multiline": False
+                }),
+                "content": ("STRING", {
+                    "default": "介绍一下绍兴？",
+                    "multiline": True
+                }),
+                "enable_thinking": ("BOOLEAN", {
+                    "default": True,
+                    "label": "启用思考过程"
+                }),
+                "thinking_budget": ("INT", {
+                    "default": 4096,
+                    "min": 0,
+                    "max": 10000,
+                    "step": 512,
+                    "label": "思考预算(tokens)"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("STRING", "STRING",)
+    RETURN_NAMES = ("thinking", "answer",)
+    FUNCTION = "execute"
+    CATEGORY = "BOZO"
+
+    def execute(self, model, content, enable_thinking, thinking_budget):
+        if self.api_key is None:
+            return ("错误: 无法从 modelscope_api_key.txt 读取有效的 token", "请检查密钥文件")
+
+        try:
+            client = OpenAI(
+                api_key=self.api_key,
+                base_url="https://api-inference.modelscope.cn/v1/"
+            )
+
+            # 设置额外参数控制思考过程
+            extra_body = {
+                "enable_thinking": enable_thinking,
+            }
+            
+            # 只有在启用思考且思考预算大于0时才添加思考预算
+            if enable_thinking and thinking_budget > 0:
+                extra_body["thinking_budget"] = thinking_budget
+
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        'role': 'user',
+                        'content': content
+                    }
+                ],
+                stream=True,
+                extra_body=extra_body
+            )
+
+            thinking_content = ""
+            answer_content = ""
+            done_thinking = False
+
+            for chunk in response:
+                thinking_chunk = chunk.choices[0].delta.reasoning_content
+                answer_chunk = chunk.choices[0].delta.content
+
+                if thinking_chunk:
+                    thinking_content += thinking_chunk
+                elif answer_chunk:
+                    if not done_thinking:
+                        done_thinking = True
+                    answer_content += answer_chunk
+
+            # 如果没有启用思考过程，思考内容可能为空
+            if not thinking_content:
+                thinking_content = "思考过程未启用或模型未返回思考内容"
+
+            return (thinking_content, answer_content)
+
+        except Exception as e:
+            error_msg = f"API 调用错误: {str(e)}"
+            print(error_msg)
+            return (error_msg, "")

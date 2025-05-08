@@ -38,7 +38,7 @@ from .siliconflow_Audio import *
 # （必填）填写 import的类名称，命名需要唯一，key或value与其他插件冲突可能引用不了。这是决定是否能引用的关键。
 # key(自定义):value(import的类名称)
 NODE_CLASS_MAPPINGS = {
-	"a1": a1,"a2": a2,"a3": a3,"a4":a4,"a5":a5,
+    "a1": a1,"a2": a2,"a3": a3,"a4":a4,"a5":a5,
     "JSONParserNode": SimpleJSONParserNode,
     "RandomJSONValueNode": RandomJSONValueNode,
     "JSONObjectIteratorNode": JSONObjectIteratorNode,
@@ -52,6 +52,7 @@ NODE_CLASS_MAPPINGS = {
     "ComfyUI_FanYi": ComfyUI_FanYi,
     "Bozo_Pic": Bozo_Pic,
     "Bozo_SplitNode": Bozo_SplitNode,
+    "BOZO_GpenImage": BOZO_GpenImage, 
     "BOZO_Custom_Image": BOZO_Custom_Image,
     "ALY_Seg_Cloth":ALY_Seg_Cloth,
     "ALY_Seg_Obj":ALY_Seg_Obj,
@@ -75,6 +76,7 @@ NODE_CLASS_MAPPINGS = {
     "PicRun": PicRun,
     "Bhebin": Bhebin,
     "BOZO_LLM_Node": BOZO_LLM_Node,
+    "BOZO_Node": BOZO_Node, 
     "BOZO_TXT_MD": BOZO_TXT_MD,
     "X_API_Node": X_API_Node,
     "X_API_Image": X_API_Image,
@@ -122,6 +124,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ComfyUI_FanYi": "🎯BOZO 百度翻译",
     "Bozo_Pic": "🎯BOZO 新建噪点图片",
     "Bozo_SplitNode": "🎯BOZO 调用文本行数据",
+    "BOZO_GpenImage": "🎯BOZO 图片增强GPEN", 
     "BOZO_Custom_Image": "🎯BOZO 自定义Latent尺寸",
     "ALY_Seg_Cloth":"🎯BOZO 衣服Seg分割-Cloth",
     "ALY_Seg_Obj":"🎯BOZO 物体Seg分割-Obj",
@@ -145,6 +148,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "BImageSave": "🎯BOZO 图片保存", 
     "Bhebin": "🎯BOZO 字符串合并拼接",
     "BOZO_LLM_Node": "🎯BOZO LLM文本对话",
+    "BOZO_Node": "🎯BOZO 思考型LLM", 
     "BOZO_TXT_MD": "🎯BOZO 文本MD读取",
     "X_API_Node": "🎯BOZO-X 文字推理",
     "X_API_Image": "🎯BOZO-X 图片推理",

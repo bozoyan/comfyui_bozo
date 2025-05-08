@@ -120,8 +120,8 @@ class BImageYunSuan:
             },
         }
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("result",)
+    RETURN_TYPES = ("STRING", "INT", "FLOAT")
+    RETURN_NAMES = ("result", "result_int", "result_float")
     FUNCTION = "execute"
     CATEGORY = "BOZO"
 
@@ -133,9 +133,17 @@ class BImageYunSuan:
             result = eval(formula, {"__builtins__": {}}, locals_dict)
             # 将结果转换为浮点数，保留1位小数，不四舍五入 修改尾部:1 数值保留一位小数
             result_str = str(float(str(result).split('.')[0] + '.' + str(result).split('.')[1][:1])) if '.' in str(result) else str(result)
-            return (result_str,)
+            
+            # 转换为整数
+            result_int = int(float(result_str))
+            
+            # 转换为浮点数，保留1位小数
+            result_float = float(result_str)
+            
+            return (result_str, result_int, result_float)
         except Exception as e:
             logger.error(f"计算公式错误: {e}")
+            return ("", 0, 0.0)
 
 
 class PicRun:
