@@ -36,5 +36,11 @@ AssetKey.json
 .DS_Store
 **/.cursor/
 **/key/
+key
+#阿里云密钥填写
+AssetKey.json
+.DS_Store
+**/.cursor/
 
-
+github
+参考.py
