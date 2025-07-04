@@ -38,16 +38,11 @@ class Bozo_preview_text:
     CATEGORY = "BOZO"
 
     def run(self, text):
-        # 确保输入是字符串类型
+        # 自动格式化为字符串
         if not isinstance(text, str):
-            text = str(text)
-        
-        # 在控制台输出接收到的文本，便于调试
-        # print(f"接收的文本: {text}")
-        
-        # 同时返回文本内容和UI显示
+            text = json.dumps(text, ensure_ascii=False, indent=2)
         return {"ui": {"text": [text]}, "result": (text,)}
-        
+
 class Bozo_ImagesInput:
     @classmethod
     def INPUT_TYPES(s):
