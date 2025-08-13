@@ -97,7 +97,7 @@ class BOZO_SiliconFlow_Txt2Img:
     RETURN_TYPES = ("IMAGE", "STRING")
     RETURN_NAMES = ("image", "image_url")
     FUNCTION = "generate"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/X"
     
     def _image_to_base64(self, image_tensor):
         """将图像张量转换为base64字符串"""

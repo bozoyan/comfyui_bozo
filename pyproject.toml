@@ -1,14 +1,14 @@
 [project]
-name = "comfyui-bozo"
-description = "A custom node for ComfyUI to parse and extract data from JSON strings."
+name = "comfyui_bozo"
+description = "A ComfyUI plugin that comprehensively utilizes various plugin functionalities, including image processing, string processing, API interface calls, and more."
 version = "1.0.0"
 license = {file = "LICENSE"}
 
 [project.urls]
-Repository = "https://github.com/bozoyan/Comfyui-Bozo"
+Repository = "https://github.com/bozoyan/comfyui_bozo"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
 PublisherId = "bozoyan"
-DisplayName = "Comfyui-Bozo"
+DisplayName = "comfyui_bozo"
 Icon = ""

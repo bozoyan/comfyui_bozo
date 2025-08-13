@@ -103,53 +103,33 @@ class BOZO_SiliconFlow_Base:
 class BOZO_SiliconFlow_LLM(BOZO_SiliconFlow_Base):
     """SiliconFlow LLM对话生成类"""
     
+    INFO = "模型列表网址：https://cloud.siliconflow.cn/sft-cm1e5qhny00yiyfv6osmivkla/models"
+    
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "system_prompt": ("STRING", {"default": "You are a helpful assistant.", "multiline": True}),
                 "user_prompt": ("STRING", {"default": "请介绍一下自己。", "multiline": True}),
-                "model": ([
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
-                    "Pro/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
-                    "Pro/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-                    "THUDM/GLM-Z1-9B-0414",
-                    "THUDM/GLM-4-9B-0414",
-                    "THUDM/GLM-Z1-32B-0414",
-                    "THUDM/GLM-4-32B-0414",
-                    "internlm/internlm2_5-7b-chat",
-                    "internlm/internlm2_5-20b-chat",
-                    "Pro/Qwen/Qwen2.5-VL-7B-Instruct",
-                    "Qwen/QwQ-32B-Preview",
-                    "Qwen/QVQ-72B-Preview",
-                    "Qwen/Qwen2.5-7B-Instruct",
-                    "Qwen/Qwen2.5-14B-Instruct",
-                    "Qwen/Qwen2.5-32B-Instruct",
-                    "Qwen/Qwen2.5-72B-Instruct",
-                    "Qwen/Qwen2.5-72B-Instruct-128K",
-                    "Qwen/Qwen2.5-VL-32B-Instruct",
-                    "Qwen/Qwen2.5-Coder-7B-Instruct",
-                    "Qwen/Qwen2.5-Coder-32B-Instruct",
-                    "Qwen/QwQ-32B",
-                    "Qwen/QVQ-72B-Preview",
-                    "deepseek-ai/deepseek-vl2",
-                    "deepseek-ai/DeepSeek-V3",
-                    "deepseek-ai/DeepSeek-R1"
-                ], {"default": "deepseek-ai/DeepSeek-V3"}),
+                "model": ("STRING", {"default": "deepseek-ai/DeepSeek-V3"}),
                 "temperature": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+            },
+            "optional": {
+                "info": ("STRING", {
+                    "default": "模型列表网址：https://cloud.siliconflow.cn/sft-cm1e5qhny00yiyfv6osmivkla/models",
+                    "multiline": True,
+                    "read_only": True
+                })
             }
         }
     
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("response", "status")
     FUNCTION = "generate"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/X"
     
-    def generate(self, system_prompt, user_prompt, model, temperature, max_tokens):
+    def generate(self, system_prompt, user_prompt, model, temperature, max_tokens, **kwargs):
         """生成LLM对话"""
         if not self.api_key:
             self.log("错误: 未找到API密钥，请在key文件夹中的siliconflow_API_key.txt文件中添加有效的API密钥")
@@ -184,32 +164,33 @@ class BOZO_SiliconFlow_LLM(BOZO_SiliconFlow_Base):
 class BOZO_SiliconFlow_ImageAnalysis(BOZO_SiliconFlow_Base):
     """SiliconFlow 图像分析类"""
     
+    INFO = "模型列表网址：https://cloud.siliconflow.cn/sft-cm1e5qhny00yiyfv6osmivkla/models"
+    
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
                 "image": ("IMAGE",),
-                "prompt": ("STRING", {"default": "分别通过中文语言和英文语言详细描述这张图片中的内容。", "multiline": True}),
-                "model": ([
-                    "deepseek-ai/deepseek-vl2",
-                    "Qwen/Qwen2.5-VL-32B-Instruct",
-                    "Qwen/Qwen2.5-VL-72B-Instruct",
-                    "Pro/Qwen/Qwen2.5-VL-7B-Instruct",
-                    "Qwen/QVQ-72B-Preview",
-                    "Qwen/Qwen2-VL-72B-Instruct",
-                    "Pro/Qwen/Qwen2-VL-7B-Instruct"
-                ], {"default": "deepseek-ai/deepseek-vl2"}),
+                "prompt": ("STRING", {"default": "分别通过中文语言和英文语言详细描述这张图片中的内容。中文描述用《》将中文数据包含，英文描述用【】将英文数据包含。", "multiline": True}),
+                "model": ("STRING", {"default": "THUDM/GLM-4.1V-9B-Thinking"}),
                 "temperature": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+            },
+            "optional": {
+                "info": ("STRING", {
+                    "default": "模型列表网址：https://cloud.siliconflow.cn/sft-cm1e5qhny00yiyfv6osmivkla/models",
+                    "multiline": True,
+                    "read_only": True
+                })
             }
         }
     
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("中文分析", "英文分析")
     FUNCTION = "analyze"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/X"
     
-    def analyze(self, image, prompt, model, temperature, max_tokens):
+    def analyze(self, image, prompt, model, temperature, max_tokens, **kwargs):
         """分析图像内容"""
         if not self.api_key:
             self.log("错误: 未找到API密钥，请在key文件夹中的siliconflow_API_key.txt文件中添加有效的API密钥")
@@ -278,120 +259,52 @@ class BOZO_SiliconFlow_ImageAnalysis(BOZO_SiliconFlow_Base):
             return f"错误: {error_msg}", f"Error: {error_msg}"
     
     def _extract_chinese_analysis(self, text):
-        """提取和处理中文分析结果"""
-        # 如果文本以"中文描述："或类似标记开头，尝试提取实际内容
-        prefixes = ["中文描述：", "中文分析：", "中文结果：", "中文：", "以下是中文描述："]
-        for prefix in prefixes:
-            if prefix in text:
-                parts = text.split(prefix, 1)
-                if len(parts) > 1:
-                    # 如果后面还有英文部分，进一步分割
-                    cn_part = parts[1]
-                    en_markers = ["英文描述", "英文分析", "英文结果", "English", "英文：", "In English"]
-                    for marker in en_markers:
-                        if marker in cn_part:
-                            return cn_part.split(marker, 1)[0].strip()
-                    return cn_part.strip()
-        
-        # 如果没有明确的中文标记，但有英文标记，取英文标记前的内容
-        en_markers = ["英文描述", "英文分析", "英文结果", "English", "英文：", "In English"]
-        for marker in en_markers:
-            if marker in text:
-                return text.split(marker, 1)[0].strip()
-        
-        # 如果没有任何标记，检查文本是否主要是中文
-        chinese_char_count = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
-        if chinese_char_count > len(text) * 0.3:  # 如果中文字符超过30%，提取前半部分作为中文
-            half_point = len(text) // 2
-            return text[:half_point].strip()
-        
-        # 如果以上方法都不适用，返回原始文本
-        return text.strip()
+        """从《》中提取中文分析结果"""
+        import re
+        match = re.search(r'《(.*?)》', text, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        return "未找到《》内的中文分析内容"
     
     def _extract_english_analysis(self, text):
-        """提取和处理英文分析结果"""
-        # 如果文本包含英文标记，提取英文部分
-        en_markers = ["英文描述：", "英文分析：", "英文结果：", "英文：", "English description:", "English analysis:", "English:", "In English:"]
-        for marker in en_markers:
-            if marker in text:
-                return text.split(marker, 1)[1].strip()
-        
-        # 如果没有英文标记，但有中文标记，取中文标记后的内容
-        cn_markers = ["中文描述", "中文分析", "中文结果", "Chinese", "中文：", "In Chinese"]
-        for marker in cn_markers:
-            if marker in text:
-                parts = text.split(marker, 1)
-                if len(parts) > 1 and parts[1]:
-                    # 如果中文标记后还有内容，检查是否还有英文部分
-                    for en_marker in en_markers:
-                        if en_marker in parts[1]:
-                            return parts[1].split(en_marker, 1)[1].strip()
-                else:
-                    # 如果中文在前，英文可能在后
-                    return parts[0].strip()
-        
-        # 如果没有任何标记，检查文本是否主要是英文
-        chinese_char_count = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
-        if chinese_char_count < len(text) * 0.3:  # 如果中文字符少于30%，认为是英文
-            return text.strip()
-        elif len(text) > 100:  # 如果文本较长，提取后半部分作为英文
-            half_point = len(text) // 2
-            return text[half_point:].strip()
-        
-        # 如果以上方法都不适用，返回原始文本
-        return text.strip()
+        """从【】中提取英文分析结果"""
+        import re
+        match = re.search(r'【(.*?)】', text, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        return "Not found English analysis in 【】"
 
 
 class BOZO_SiliconFlow_JSONGenerator(BOZO_SiliconFlow_Base):
     """SiliconFlow JSON生成类"""
     
+    INFO = "模型列表网址：https://cloud.siliconflow.cn/sft-cm1e5qhny00yiyfv6osmivkla/models"
+    
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "system_prompt": ("STRING", {"default": "You are a helpful assistant designed to output JSON.", "multiline": True}),
+                "system_prompt": ("STRING", {"default": "您是一个编程助手, 旨在输出英文JSON格式的文件，json文件的第一条数据为分类字段的解释数据。", "multiline": True}),
                 "user_prompt": ("STRING", {"default": "生成一个包含三个虚构人物的JSON数据，每个人物包含姓名、年龄和职业字段。", "multiline": True}),
-                "model": ([
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
-                    "Pro/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
-                    "Pro/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
-                    "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-                    "THUDM/GLM-Z1-9B-0414",
-                    "THUDM/GLM-4-9B-0414",
-                    "THUDM/GLM-Z1-32B-0414",
-                    "THUDM/GLM-4-32B-0414",
-                    "internlm/internlm2_5-7b-chat",
-                    "internlm/internlm2_5-20b-chat",
-                    "Pro/Qwen/Qwen2.5-VL-7B-Instruct",
-                    "Qwen/QwQ-32B-Preview",
-                    "Qwen/QVQ-72B-Preview",
-                    "Qwen/Qwen2.5-7B-Instruct",
-                    "Qwen/Qwen2.5-14B-Instruct",
-                    "Qwen/Qwen2.5-32B-Instruct",
-                    "Qwen/Qwen2.5-72B-Instruct",
-                    "Qwen/Qwen2.5-72B-Instruct-128K",
-                    "Qwen/Qwen2.5-VL-32B-Instruct",
-                    "Qwen/Qwen2.5-Coder-7B-Instruct",
-                    "Qwen/Qwen2.5-Coder-32B-Instruct",
-                    "Qwen/QwQ-32B",
-                    "Qwen/QVQ-72B-Preview",
-                    "deepseek-ai/deepseek-vl2",
-                    "deepseek-ai/DeepSeek-V3",
-                    "deepseek-ai/DeepSeek-R1"
-                ], {"default": "Qwen/Qwen2.5-Coder-32B-Instruct"}),
+                "model": ("STRING", {"default": "Qwen/Qwen3-Coder-30B-A3B-Instruct"}),
                 "temperature": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.1}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+            },
+            "optional": {
+                "info": ("STRING", {
+                    "default": "模型列表网址：https://cloud.siliconflow.cn/sft-cm1e5qhny00yiyfv6osmivkla/models",
+                    "multiline": True,
+                    "read_only": True
+                })
             }
         }
     
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("json_data", "status")
     FUNCTION = "generate_json"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/X"
     
-    def generate_json(self, system_prompt, user_prompt, model, temperature, max_tokens):
+    def generate_json(self, system_prompt, user_prompt, model, temperature, max_tokens, **kwargs):
         """生成JSON数据"""
         if not self.api_key:
             self.log("错误: 未找到API密钥，请在key文件夹中的siliconflow_API_key.txt文件中添加有效的API密钥")

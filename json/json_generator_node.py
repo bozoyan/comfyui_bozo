@@ -1,7 +1,7 @@
 import json
 from typing import Union
 
-class JSONGeneratorNode:
+class B_JSONGeneratorNode:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -14,7 +14,7 @@ class JSONGeneratorNode:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("generated_json",)
     FUNCTION = "generate_json"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
 
     def generate_json(self, key_value_pairs: str, is_array: bool) -> tuple[str]:
         try:

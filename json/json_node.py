@@ -1,7 +1,7 @@
 import json
 from typing import Union
 
-class SimpleJSONParserNode:
+class B_SimpleJSONParserNode:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -14,7 +14,7 @@ class SimpleJSONParserNode:
     RETURN_TYPES = ("STRING", "INT",)
     RETURN_NAMES = ("parsed_data", "array_size",)
     FUNCTION = "parse_json"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
 
     def parse_json(self, json_string: str, path: str) -> tuple[str, int]:
         try:

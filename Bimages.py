@@ -35,7 +35,7 @@ class Bozo_preview_text:
     RETURN_TYPES = ("STRING",)
     FUNCTION = "run"
     OUTPUT_NODE = True
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO"
 
     def run(self, text):
         # 自动格式化为字符串
@@ -43,7 +43,7 @@ class Bozo_preview_text:
             text = json.dumps(text, ensure_ascii=False, indent=2)
         return {"ui": {"text": [text]}, "result": (text,)}
 
-class Bozo_ImagesInput:
+class B_ImagesInput:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -59,7 +59,7 @@ class Bozo_ImagesInput:
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("images",)
     FUNCTION = "combine"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
 
     DESCRIPTION = """
     文本预览区域
@@ -105,7 +105,7 @@ class BImageSave:
     RETURN_TYPES = ("IMAGE", "STRING",)
     RETURN_NAMES = ("images", "save_paths",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
     OUTPUT_NODE = True
 
     def extract_urls(self, text):
@@ -317,7 +317,7 @@ class PreviewPic:
     RETURN_TYPES = ("STRING", "STRING", "INT", "INT",)
     RETURN_NAMES = ("info", "image_path", "width", "height",)
     FUNCTION = "preview_image"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
     
     def preview_image(self, image_path):
         try:

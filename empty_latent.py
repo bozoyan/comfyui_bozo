@@ -197,7 +197,7 @@ class BOZO_Custom_Image:
     RETURN_TYPES = ("LATENT", "INT", "INT", "STRING", "INT")
     RETURN_NAMES = ("latent", "width", "height", "image_size", "batch_size")
     FUNCTION = "generate"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
 
     def generate(self, size_preset, ratio_option, batch_size=1, device="cpu"):
         if DEBUG:

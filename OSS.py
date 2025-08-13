@@ -28,7 +28,7 @@ class ImageLoader:
     RETURN_TYPES = ("IMAGE", "STRING")
     RETURN_NAMES = ("images", "paths")
     FUNCTION = "load_images"
-    CATEGORY = "BOZO/OSS"
+    CATEGORY = "🇨🇳BOZO/OSS"
 
     def load_images(self, mode, image_path, browse=False):
         if browse:
@@ -150,14 +150,14 @@ class OSSUploader:
                 "bucket_name": ("STRING", {"default": "", "multiline": False}),
                 "directory": ("STRING", {"default": "images/", "multiline": False}),
                 "oss_domain": ("STRING", {"default": "", "multiline": False}),
-                "name_prefix": ("STRING", {"default": "bozo", "multiline": False}),
+                "name_prefix": ("STRING", {"default": "PIC", "multiline": False}),
             }
         }
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("oss_urls",)
     FUNCTION = "upload_to_oss"
-    CATEGORY = "BOZO/OSS"
+    CATEGORY = "🇨🇳BOZO/OSS"
 
     def upload_to_oss(self, images, image_paths, access_key_id, access_key_secret, bucket_name, directory, oss_domain, name_prefix):
         # 如果提供了新的凭证，保存它们
@@ -264,7 +264,7 @@ class OSSUrlOutput:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("formatted_urls",)
     FUNCTION = "process_urls"
-    CATEGORY = "BOZO/OSS"
+    CATEGORY = "🇨🇳BOZO/OSS"
 
     def process_urls(self, oss_urls):
         # 先统一替换所有分隔符为换行符

@@ -69,7 +69,7 @@ class ComfyUI_FanYi:
     RETURN_NAMES = ('translated_text',)
     FUNCTION = "fanyi"
     OUTPUT_NODE = True
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO/功能"
 
     def fanyi(self, text_input, translation_direction, log_prompt):
         # 检查API密钥是否有效

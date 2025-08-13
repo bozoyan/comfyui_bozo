@@ -45,7 +45,7 @@ class ALY_Seg_head:
     RETURN_NAMES = ("image","Width","Height","X","Y")
     OUTPUT_NODE = True
     FUNCTION = "sample"
-    CATEGORY = "BOZO/Seg"
+    CATEGORY = "🇨🇳BOZO/Seg"
 
     def sample(self,image,back_type):
         

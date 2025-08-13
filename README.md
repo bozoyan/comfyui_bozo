@@ -3,13 +3,19 @@
 ## 介绍
 本插件集合了多个实用节点，涵盖 JSON 处理、图片生成、翻译、LLM 对话、图像分割、OSS 存储、HTML/Markdown 处理以及音频合成等功能。适用于 ComfyUI 流程化工作流，提升创作效率。
 
+Python库的安装从requirements.txt使用 pip 安装。可以先执行 
+`python check_requirements.py`
+检查依赖是否安装完整。
+![](http://pic.201782.com/yiyi/20250813100022_qOgSwu_1.png)
+
 ---
 
 ## 安装步骤
-1. 将本插件文件夹放置到 ComfyUI 的 `custom_nodes` 目录下。
-2. 重启 ComfyUI 服务。
-3. 在 ComfyUI 的节点面板中即可看到新增的节点。
-
+1. 克隆项目 将本插件文件夹放置到 ComfyUI 的 `custom_nodes` 目录下。
+`git clone https://github.com/bozoyan/comfyui_bozo.git`
+2. 安装依赖：`pip install -r requirements.txt`
+3. 重启 ComfyUI 服务。在 ComfyUI 的节点面板中即可看到新增的节点。
+![](http://pic.201782.com/yiyi/20250813101210_drVCBS_Screenshot.png)
 ---
 
 ## 节点分类与功能
@@ -36,7 +42,7 @@
 ### 2. JSON 处理节点
 #### 基础操作
 - **JSON解析器**  
-  `JSONParserNode`  
+  `B_JSONParserNode`  
   将 JSON 字符串解析为 Python 字典。
 - **输入**: 
   - `json_string`: JSON字符串
@@ -46,7 +52,7 @@
   - `array_size`: 结果为数组时的长度
 
 - **JSON合并**  
-  `JSONMergeNode`  
+  `B_JSONMergeNode`  
   合并两个或多个 JSON 对象。
 - **输入**:
   - `json_input_1`: 第一个JSON
@@ -56,7 +62,7 @@
   - `merged_json`: 合并后的JSON
 
 - **JSON修改**  
-  `JSONModifierNode`  
+  `B_JSONModifierNode`  
   根据路径修改 JSON 对象中的值。
 - **输入**:
   - `json_input`: 待修改的JSON
@@ -66,7 +72,7 @@
   - `modified_json`: 更新后的JSON
 
 - **JSON生成器**  
-  `JSONGeneratorNode`  
+  `B_JSONGeneratorNode`  
   根据输入生成标准 JSON 字典。
 - **输入**:
   - `key_value_pairs`: 键值对
@@ -76,7 +82,7 @@
 
 #### 高级操作
 - **随机JSON值**  
-  `RandomJSONValueNode`  
+  `B_RandomJSONValueNode`  
   从 JSON 对象中随机选择一个值。
 - **输入**:
   - `json_input`: JSON字符串
@@ -85,7 +91,7 @@
   - `random_value`: 随机选择的值
 
 - **JSON长度检查**  
-  `JSONLengthNode`  
+  `B_JSONLengthNode`  
   获取 JSON 数组或对象的长度。
 - **输入**:
   - `json_input`: JSON输入
@@ -93,7 +99,7 @@
   - `length`: 项目数量
 
 - **JSON Key 检查**  
-  `JSONKeyCheckerNode`  
+  `B_JSONKeyCheckerNode`  
   检查指定键是否存在。
 - **输入**:
   - `json_input`: JSON对象
@@ -103,7 +109,7 @@
   - `value`: 存在时的值
 
 - **JSON字符串生成**  
-  `JSONStringifierNode`  
+  `B_JSONStringifierNode`  
   将 JSON 对象转换为格式化字符串。
 - **输入**:
   - `json_input`: JSON输入
@@ -114,7 +120,7 @@
 
 #### 迭代与遍历
 - **JSON Object 迭代器**  
-  `JSONObjectIteratorNode`  
+  `B_JSONObjectIteratorNode`  
   遍历 JSON 对象的键值对。
 - **输入**:
   - `json_input`: JSON对象
@@ -127,7 +133,7 @@
   - `total_items`: 总项目数
 
 - **JSON Array 迭代器**  
-  `JSONArrayIteratorNode`  
+  `B_JSONArrayIteratorNode`  
   遍历 JSON 数组元素。
 - **输入**:
   - `json_input`: JSON数组
@@ -145,7 +151,7 @@
 - 复杂结构: `object.array[2].property`
 
 #### 1. 遍历JSON
-```python
+```
 # 输入JSON
 {
     "users": [
@@ -159,7 +165,7 @@
 ```
 
 #### 2. 合并JSON对象
-```python
+```
 # 第一个输入
 {"name": "John", "age": 30}
 
@@ -171,7 +177,7 @@
 ```
 
 #### 3. 随机值选择
-```python
+```
 # 输入JSON
 {
     "colors": ["red", "blue", "green"],
@@ -424,51 +430,77 @@
 
 ---
 
-## 配置说明
+## KEY配置说明
 ### 阿里云图像插件密钥配置
 #### 登录阿里云节点：暂时支持衣服+物体
 #### https://vision.aliyun.com/imageseg?spm=api-workbench.api_explorer.0.0.604ce85cenrYuD
 #### 获取 key 填写到 key/AssetKey.json
-1. 在插件 key 目录下创建 `AssetKey.json` 文件。
+1. 在插件 key 目录下创建阿里云 `AssetKey.json` 文件。
 2. 填写内容示例：
    ```json
    {
-     "access_key_id": "your_access_key_id",
-     "access_key_secret": "your_access_key_secret"
+     "access_key_id": "your_access_key_id 访问密钥 ID，用于标识用户身份。",
+     "access_key_secret": "your_access_key_secret 访问密钥 Secret，用于验证用户身份。"
    }
    ```
 
 ### LLM API密钥配置
-1. 在插件 key 目录下创建相应的API密钥文件：
+1. 在插件 key 目录下创建相应的API密钥文件，密钥文本直接放进去就可以：
    - ModelScope API: `modelscope_api_key.txt`
-   - OpenAI API: `openai_api_key.txt`
+   - Siliconflow API: `siliconflow_API_key.txt`
    - 其他API密钥文件
 
 ### 百度翻译API配置
-1. 在插件 key 目录下创建 `baidu_fanyi_key.json` 文件。
+1. 在插件 key 目录下创建 `AssetKey_Baidu.json` 文件。
 2. 填写内容示例：
    ```json
    {
-     "appid": "your_appid",
-     "appkey": "your_appkey"
+     "appid": "your_appid 百度翻译API appid",
+     "appkey": "your_appkey 百度翻译API appkey"
    }
    ```
 
 ### OSS存储配置
-1. 在插件 key 目录下创建 `oss_config.json` 文件。
+1. 在插件 key 目录下创建 `AssetKey_OSS.json` 文件。
 2. 填写内容示例：
    ```json
-   {
-     "access_key_id": "your_access_key_id",
-     "access_key_secret": "your_access_key_secret",
-     "endpoint": "your_endpoint",
-     "bucket_name": "your_bucket_name"
-   }
+    {
+      "access_key_id": "your_access_key_id 访问密钥 ID，用于标识用户身份。", 
+      "access_key_secret": "your_access_key_secret 访问密钥 Secret，用于验证用户身份。",
+      "bucket_name": "your_bucket_name 你选择的Bucket名字",
+      "oss_domain": "your_oss_domain OSS访问地址，建议配置为https://",
+      "directory": "your_directory/ 保存OSS文件在Bucket中的相对路径，需要斜杠结尾",
+      "name_prefix": "your_prefix 文件名前缀"
+    }
    ```
 
+### olcengine(火山引擎) API配置
+1. 在插件 key 目录下创建 Volcengine.json 文件。
+2. 填写内容示例：
+   ```json
+    {
+      "api_key": "your_api_key 火山引擎API Key",
+      "model": "your_model_name 文生图模型名称",
+      "model_edit": "your_edit_model_name 图像编辑模型名称",
+      "model_id": "your_model_id 图片理解模型ID",
+      "base_url": "your_base_url 火山引擎基础URL"
+    }
+   ```
+
+### GLM配置
+1. 在插件 key 目录下创建 glm.json 文件（如果尚未创建）。
+2. 填写内容示例：
+   ```json
+    {
+      "ZHIPUAI_API_KEY": "your_zhipu_api_key 智谱AI的API密钥",
+      "from_translate": "zh 源语言，默认中文",
+      "to_translate": "en 目标语言，默认英文",
+      "model": "your_model_name 模型名称"
+    }
+   ```
 ---
 
-## 使用示例
+## 简单使用示例
 ### 1. 文本到图像生成流程
 ```
 文本输入 -> BOZO LLM文本对话 -> 文生图 -> 图片增强GPEN -> 图片保存
@@ -479,7 +511,7 @@
 图片读取器 -> 物体Seg分割-Obj -> 图片运算 -> 保存图片元数据
 ```
 
-### 3. 多模态内容生成
+### 3. 多模态内容生成并上传 oss 流程
 ```
 文本输入 -> SiliconFlow LLM对话 -> Markdown转HTML -> HTML转图片 -> OSS上传器 -> OSS链接输出
 ```
@@ -492,12 +524,15 @@
 ---
 
 ## 更新日志
-- 2023.12: 初始版本发布，包含基础JSON处理和图像处理节点
-- 2024.01: 添加阿里云图像分割和OSS存储功能
-- 2024.02: 添加LLM对话和HTML/Markdown处理功能
-- 2024.03: 添加SiliconFlow节点和音频处理功能
-- 2024.04: 优化文档和用户界面，添加更多示例
-
+- 2024.12: 初始版本发布，包含基础JSON处理和图像处理节点
+- 2025.01: 添加阿里云图像分割和OSS存储功能
+- 2025.02: 添加LLM对话和HTML/Markdown处理功能
+- 2025.03: 添加SiliconFlow节点和音频处理功能
+- 2025.04: 优化文档和用户界面，添加更多示例
+- 2025.05: 添加百度翻译API功能，以及其他 LLM 接口支持
+- 2025.06: 修复音频文件上传问题，添加魔搭文生图节点功能，添加其他实用节点功能
+- 2025.07: 添加 GLM、Grok、Qwen 等云端模型API支持，修复对话中空行和换行符问题，新增对话流式回复功能
+- 2025.08: BizyAIR 云API节点开发中……
 ---
 
 ## 贡献与反馈
@@ -507,20 +542,3 @@
 
 ## 许可证
 MIT License
-```
-
-这个更新后的README文件包含了以下改进：
-
-1. 扩展了介绍部分，涵盖了更多功能类别
-2. 根据__init__.py中的节点配置，添加了更多节点分类和详细描述
-3. 新增了以下分类：
-   - 文本和语言处理节点
-   - HTML和Markdown处理节点
-   - 云存储和API节点
-   - SiliconFlow节点
-   - 音频处理节点
-4. 添加了更多配置说明，包括各种API密钥的配置方法
-5. 增加了使用示例部分，展示了几种常见的工作流程
-6. 添加了更新日志和贡献反馈部分
-
-这个README现在更全面地反映了插件的所有功能，并提供了更清晰的分类和使用指南。

@@ -2,7 +2,7 @@ import json
 from typing import Union, Tuple
 import time
 
-class JSONObjectIteratorNode:
+class B_JSONObjectIteratorNode:
     stored_index = 0
     last_update_time = 0
     
@@ -19,7 +19,7 @@ class JSONObjectIteratorNode:
     RETURN_TYPES = ("STRING", "STRING", "INT", "INT")
     RETURN_NAMES = ("key", "value", "current_index", "total_items")
     FUNCTION = "iterate_object"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
 
     @classmethod
     def IS_CHANGED(cls, **kwargs) -> float:
@@ -68,7 +68,7 @@ class JSONObjectIteratorNode:
         except json.JSONDecodeError:
             raise ValueError("Invalid JSON input")
 
-class JSONArrayIteratorNode:
+class B_JSONArrayIteratorNode:
     stored_index = 0
     last_update_time = 0
     
@@ -85,7 +85,7 @@ class JSONArrayIteratorNode:
     RETURN_TYPES = ("STRING", "INT", "INT")
     RETURN_NAMES = ("item", "current_index", "total_items")
     FUNCTION = "iterate_array"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
 
     @classmethod
     def IS_CHANGED(cls, **kwargs) -> float:

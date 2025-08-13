@@ -1,9 +1,9 @@
 import { app } from "/scripts/app.js";
 
 app.registerExtension({
-    name: "ComfyUI/Bozo.Bozo_ImagesInput",
+    name: "ComfyUI/Bozo.B_ImagesInput",
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
-        if (nodeData.name === "Bozo_ImagesInput") {
+        if (nodeData.name === "B_ImagesInput") {
             nodeType.prototype.onNodeCreated = function () {
                 this.addWidget("button", "Update inputs", null, () => {
                     this.updateInputs();

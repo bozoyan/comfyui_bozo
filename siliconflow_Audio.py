@@ -87,7 +87,7 @@ class BOZO_SiliconFlow_Audio_UploadBase64(BOZO_SiliconFlow_Audio_Base):
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("voice_uri", "status")
     FUNCTION = "upload_voice"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
     
     def convert_audio_to_base64(self, file_path):
         """将音频文件转换为base64编码"""
@@ -196,7 +196,7 @@ class BOZO_SiliconFlow_Audio_UploadFile(BOZO_SiliconFlow_Audio_Base):
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("voice_uri", "status")
     FUNCTION = "upload_voice"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
     
     def upload_voice(self, custom_name, audio_file_path, text):
         """通过本地音频文件上传用户预置音色"""
@@ -264,7 +264,7 @@ class BOZO_SiliconFlow_Audio_ListVoices(BOZO_SiliconFlow_Audio_Base):
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("voice_list", "status")
     FUNCTION = "list_voices"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
     
     def list_voices(self):
         """获取用户动态音色列表"""
@@ -311,7 +311,7 @@ class BOZO_SiliconFlow_Audio_DeleteVoice(BOZO_SiliconFlow_Audio_Base):
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("status",)
     FUNCTION = "delete_voice"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
     
     def delete_voice(self, voice_uri):
         """删除用户动态音色"""
@@ -373,7 +373,7 @@ class BOZO_SiliconFlow_Audio_CustomVoice(BOZO_SiliconFlow_Audio_Base):
     RETURN_TYPES = ("STRING", "AUDIO", "STRING", "STRING")
     RETURN_NAMES = ("audio_path", "audio", "file_name", "audio_url")
     FUNCTION = "generate_speech"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
     OUTPUT_NODE = True
     
     def generate_speech(self, voice_uri, text, response_format, speed, gain, sample_rate=None, save_path=""):
@@ -523,7 +523,7 @@ class BOZO_SiliconFlow_Audio_SystemVoice(BOZO_SiliconFlow_Audio_Base):
     RETURN_TYPES = ("STRING", "AUDIO", "STRING", "STRING")
     RETURN_NAMES = ("audio_path", "audio", "file_name", "audio_url")
     FUNCTION = "generate_speech"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
     OUTPUT_NODE = True
     
     def generate_speech(self, voice, text, response_format, speed, gain, sample_rate=None, save_path=""):
@@ -673,7 +673,7 @@ class BOZO_SiliconFlow_Audio_FileSelector(BOZO_SiliconFlow_Audio_Base):
     RETURN_TYPES = ("STRING", "STRING", "AUDIO", "STRING")
     RETURN_NAMES = ("file_list", "selected_file", "audio", "audio_url")
     FUNCTION = "list_audio_files"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
 
     def list_audio_files(self, refresh, keyword, sort_by="修改时间", sort_order="降序", **kwargs):
         try:
@@ -768,10 +768,11 @@ def list_audio_files_in_dir(directory):
     if not audio_files:
         audio_files = ["无音频文件"]
     return sorted(audio_files) # 返回排序后的文件名列表
-# --- End Helper ---
+
+
 
 class BOZO_SiliconFlow_Audio_FilePicker(BOZO_SiliconFlow_Audio_Base):
-    """音频文件选择器，仅从 output/audio/ 目录下拉选择音频文件或手动输入绝对路径加载为 AUDIO 类型"""
+    """音频文件选择器 + 调用 SiliconFlow 语音转文字，返回 AUDIO 和 STRING 输出"""
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -779,42 +780,38 @@ class BOZO_SiliconFlow_Audio_FilePicker(BOZO_SiliconFlow_Audio_Base):
         return {
             "required": {
                 "audio_file": (files, {"default": files[0]}),
-                "manual_path": ("STRING", {"default": "", "multiline": False}),  # 新增手动路径输入
+                "manual_path": ("STRING", {"default": "", "multiline": False}),
             },
             "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
         }
 
-    RETURN_TYPES = ("AUDIO",)
-    RETURN_NAMES = ("audio",)
+    RETURN_TYPES = ("AUDIO", "STRING")  # 增加文本输出
+    RETURN_NAMES = ("audio", "文字转录")
     FUNCTION = "load_selected_audio"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/音频"
 
     def load_selected_audio(self, audio_file, manual_path, **kwargs):
-        # 优先使用手动路径
         if manual_path and manual_path.strip():
             manual_path = manual_path.strip()
             if not os.path.exists(manual_path) or not os.path.isfile(manual_path):
-                self.log(f"错误: 手动路径文件不存在或不是一个有效文件: {manual_path}")
-                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
-            # 复制到 output/audio/ 目录下
+                self.log(f"错误: 手动路径文件无效: {manual_path}")
+                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100}, "")
             file_name = os.path.basename(manual_path)
             dest_path = os.path.join(DEFAULT_AUDIO_DIR, file_name)
             try:
                 shutil.copyfile(manual_path, dest_path)
-                self.log(f"已将 {manual_path} 复制到 {dest_path}")
                 full_path = dest_path
             except Exception as e:
                 self.log(f"复制文件失败: {str(e)}")
-                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100}, "")
         else:
-            # 原有逻辑
             if audio_file == "无音频文件":
                 self.log("警告: 没有选择有效的音频文件")
-                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100}, "")
             full_path = os.path.join(DEFAULT_AUDIO_DIR, audio_file)
-            if not os.path.exists(full_path) or not os.path.isfile(full_path):
-                self.log(f"错误: 文件不存在或不是一个有效文件: {full_path}")
-                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+            if not os.path.exists(full_path):
+                self.log(f"错误: 文件不存在: {full_path}")
+                return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100}, "")
 
         self.log(f"正在加载音频文件: {full_path}")
         try:
@@ -831,8 +828,125 @@ class BOZO_SiliconFlow_Audio_FilePicker(BOZO_SiliconFlow_Audio_Base):
                 "sample_rate": sr
             }
             self.log(f"音频加载成功: shape={waveform.shape}, sample_rate={sr}")
-            return (audio_output,)
+            
+            # ✨ 调用转文字功能
+            transcript_text = self.transcribe_audio(full_path)
+            if transcript_text:
+                self.log(f"✅ 转录结果：{transcript_text}")
+            else:
+                self.log("⚠️ 转录结果为空或识别失败")
+
+            return (audio_output, transcript_text or "")
         except Exception as e:
-            self.log(f"加载或处理音频文件时出错 '{full_path}': {str(e)}")
-            return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+            self.log(f"加载音频出错: {str(e)}")
+            return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100}, "")
+
+    def transcribe_audio(self, file_path):
+        """调用 SiliconFlow API 并保存识别结果"""
+        try:
+            if not self.api_key:
+                self.log("⚠️ API 密钥未设置，无法转录")
+                return None
+
+            url = "https://api.siliconflow.cn/v1/audio/transcriptions"
+            headers = {
+                "Authorization": f"Bearer {self.api_key}"
+            }
+            data = {
+                "model": "FunAudioLLM/SenseVoiceSmall"
+            }
+            files = {
+                "file": open(file_path, "rb")
+            }
+
+            response = requests.post(url, headers=headers, data=data, files=files, timeout=60)
+            files["file"].close()
+
+            if response.status_code == 200:
+                res_json = response.json()
+                transcript_text = res_json.get("text", "")
+                
+                # 保存为日志文件
+                output_txt_path = os.path.join(self.output_dir, "transcription_output.txt")
+                with open(output_txt_path, "w", encoding="utf-8") as f:
+                    f.write(transcript_text)
+
+                return transcript_text
+            else:
+                self.log(f"❌ 转录请求失败: 状态码 {response.status_code}, 响应: {response.text}")
+                return None
+
+        except Exception as e:
+            self.log(f"❌ 转录请求出错: {str(e)}")
+            return None
+
+
+
+
+# --- End Helper ---
+# class BOZO_SiliconFlow_Audio_FilePicker(BOZO_SiliconFlow_Audio_Base):
+#     """音频文件选择器，仅从 output/audio/ 目录下拉选择音频文件或手动输入绝对路径加载为 AUDIO 类型"""
+
+#     @classmethod
+#     def INPUT_TYPES(cls):
+#         files = list_audio_files_in_dir(DEFAULT_AUDIO_DIR)
+#         return {
+#             "required": {
+#                 "audio_file": (files, {"default": files[0]}),
+#                 "manual_path": ("STRING", {"default": "", "multiline": False}),  # 新增手动路径输入
+#             },
+#             "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
+#         }
+
+#     RETURN_TYPES = ("AUDIO",)
+#     RETURN_NAMES = ("audio",)
+#     FUNCTION = "load_selected_audio"
+#     CATEGORY = "🇨🇳BOZO/音频"
+
+#     def load_selected_audio(self, audio_file, manual_path, **kwargs):
+#         # 优先使用手动路径
+#         if manual_path and manual_path.strip():
+#             manual_path = manual_path.strip()
+#             if not os.path.exists(manual_path) or not os.path.isfile(manual_path):
+#                 self.log(f"错误: 手动路径文件不存在或不是一个有效文件: {manual_path}")
+#                 return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+#             # 复制到 output/audio/ 目录下
+#             file_name = os.path.basename(manual_path)
+#             dest_path = os.path.join(DEFAULT_AUDIO_DIR, file_name)
+#             try:
+#                 shutil.copyfile(manual_path, dest_path)
+#                 self.log(f"已将 {manual_path} 复制到 {dest_path}")
+#                 full_path = dest_path
+#             except Exception as e:
+#                 self.log(f"复制文件失败: {str(e)}")
+#                 return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+#         else:
+#             # 原有逻辑
+#             if audio_file == "无音频文件":
+#                 self.log("警告: 没有选择有效的音频文件")
+#                 return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+#             full_path = os.path.join(DEFAULT_AUDIO_DIR, audio_file)
+#             if not os.path.exists(full_path) or not os.path.isfile(full_path):
+#                 self.log(f"错误: 文件不存在或不是一个有效文件: {full_path}")
+#                 return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
+
+#         self.log(f"正在加载音频文件: {full_path}")
+#         try:
+#             waveform, sr = torchaudio.load(full_path)
+#             if waveform.dtype != torch.float32:
+#                 waveform = waveform.to(torch.float32)
+#             sr = int(sr)
+#             if waveform.dim() == 1:
+#                 waveform = waveform.unsqueeze(0).unsqueeze(0)
+#             elif waveform.dim() == 2:
+#                 waveform = waveform.unsqueeze(0)
+#             audio_output = {
+#                 "waveform": waveform,
+#                 "sample_rate": sr
+#             }
+#             self.log(f"音频加载成功: shape={waveform.shape}, sample_rate={sr}")
+#             return (audio_output,)
+#         except Exception as e:
+#             self.log(f"加载或处理音频文件时出错 '{full_path}': {str(e)}")
+#             return ({"waveform": torch.zeros((1, 1, 1), dtype=torch.float32), "sample_rate": 44100},)
 

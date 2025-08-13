@@ -29,7 +29,7 @@ def encode_image_b64(ref_image):
     os.remove(image_path)
     return base64_image
 
-class RH_LLMAPI_Node():
+class BOZO_LLMAPI_Node():
 
     def __init__(self):
         pass
@@ -41,7 +41,7 @@ class RH_LLMAPI_Node():
                 "api_baseurl": ("STRING", {"multiline": True}),
                 "api_key": ("STRING", {"default": ""}),
                 "model": ("STRING", {"default": ""}),
-                "role": ("STRING", {"multiline": True, "default": "You are a helpful assistant"}),
+                "role": ("STRING", {"multiline": True, "default": "你是一个乐于助人的助手，你需要根据用户的问题，生成符合要求的答案。"}),
                 "prompt": ("STRING", {"multiline": True, "default": "Hello"}),
                 "temperature": ("FLOAT", {"default": 0.6}),
                 "seed": ("INT", {"default": 100}),
@@ -54,7 +54,7 @@ class RH_LLMAPI_Node():
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("describe",)
     FUNCTION = "rh_run_llmapi"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO"
 
     def rh_run_llmapi(self, api_baseurl, api_key, model, role, prompt, temperature, seed, ref_image=None):
 
@@ -67,7 +67,6 @@ class RH_LLMAPI_Node():
         else:
             base64_image = encode_image_b64(ref_image)
             messages = [
-                {'role': 'system', 'content': f'{role}'},
                 {'role': 'user', 
                  'content': [
                         {
@@ -77,16 +76,19 @@ class RH_LLMAPI_Node():
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}"
+                                "url": f"data:image/webp;base64,{base64_image}"
                             }
                         },
                     ]},
             ]
-        completion = client.chat.completions.create(model=model, messages=messages, temperature=temperature)
-        if completion is not None and hasattr(completion, 'choices'):
-            prompt = completion.choices[0].message.content
-        else:
-            prompt = 'Error'
+        try:
+            completion = client.chat.completions.create(model=model, messages=messages, temperature=temperature)
+            if completion is not None and hasattr(completion, 'choices'):
+                prompt = completion.choices[0].message.content
+            else:
+                prompt = '错误：API 没有响应'
+        except Exception as e:
+            prompt = f'Error: {str(e)}'
         return (prompt,)
 
 
@@ -116,7 +118,7 @@ class Bhebin:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("merged_text",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO"
 
     def execute(self, separator, **kwargs):
         try:
@@ -149,6 +151,43 @@ class Bhebin:
             return ("",)
 
 class BOZO_LLM_Node:
+
+    # 默认 system_content（不显示在面板中）
+    DEFAULT_SYSTEM_CONTENT = """# FLUX prompt 助理
+
+你来充当一位有艺术气息的FLUX prompt 助理。
+
+## 任务
+
+我用自然语言告诉你要生成的prompt的主题，你的任务是根据这个主题想象一幅完整的画面，然后生成详细的prompt，包含具体的描述、场景、情感和风格等元素，让FLUX可以生成高质量的图像。
+
+## 背景介绍
+
+FLUX是一款利用深度学习的文生图模型，支持通过使用 自然语言 prompt 来产生新的图像，描述要包含或省略的元素。
+
+## Prompt 格式要求
+
+下面我将说明 prompt 的生成步骤，这里的 prompt 可用于描述人物、风景、物体或抽象数字艺术图画。你可以根据需要添加合理的、但不少于5处的画面细节。
+
+**示例：**
+
+- **输入主题**：A dragon soaring above a mountain range.
+  - **生成提示词**：A majestic, emerald-scaled dragon with glowing amber eyes, wings outstretched, soars through a breathtaking vista of snow-capped mountains. The dragon's powerful form dominates the scene, casting a long shadow over the imposing peaks. Below, a cascading waterfall plunges into a deep valley, its spray catching the sunlight in a dazzling array of colors. The dragon's scales shimmer with iridescent hues, reflecting the surrounding natural beauty. The sky is a vibrant blue, dotted with fluffy white clouds, creating a sense of awe and wonder. This dynamic and visually stunning depiction captures the majesty of both the dragon and the mountainous landscape.
+
+- **输入主题**：Explain the process of making a cup of tea.
+  - **生成提示词**：A detailed infographic depicting the step-by-step process of making a cup of tea. The infographic should be visually appealing with clear illustrations and concise text. It should start with a kettle filled with water and end with a steaming cup of tea, highlighting steps like heating the water, selecting tea leaves, brewing the tea, and enjoying the final product. The infographic should be designed to be informative and engaging, with a color scheme that complements the theme of tea. The text should be legible and informative, explaining each step in the process clearly and concisely.
+
+**指导**：
+
+1. **描述细节**：尽量提供具体的细节，如颜色、形状、位置等。
+2. **情感和氛围**：描述场景的情感和氛围，如温暖、神秘、宁静等。
+3. **风格和背景**：说明场景的风格和背景，如卡通风格、未来主义、复古等。
+
+### 3. 限制：
+- 我给你的主题可能是用中文描述，你给出的prompt只用英文。
+- 不要解释你的prompt，直接输出prompt。
+- 不要输出其他任何非prompt字符，只输出prompt，也不要包含 **生成提示词**： 等类似的字符。
+"""
     def __init__(self):
         try:
             # 修改API密钥文件路径
@@ -167,11 +206,11 @@ class BOZO_LLM_Node:
         return {
             "required": {
                 "model": ("STRING", {
-                    "default": "Qwen/Qwen2.5-32B-Instruct",
+                    "default": "Qwen/Qwen3-30B-A3B-Instruct-2507",
                     "multiline": False
                 }),
                 "system_content": ("STRING", {
-                    "default": "You are a translate assistant.Translate Chinese into English accurately according to English semantic description habits.",
+                    "default": "",
                     "multiline": True
                 }),
                 "user_content": ("STRING", {
@@ -184,11 +223,15 @@ class BOZO_LLM_Node:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("response_text",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO"
 
     def execute(self, model, system_content, user_content):
         if self.api_key is None:
             return ("错误: 无法从 modelscope_api_key.txt 读取有效的 token",)
+
+        # 如果用户没有输入 system_content，则使用类中默认的提示词
+        if not system_content.strip():
+            system_content = self.DEFAULT_SYSTEM_CONTENT
 
         try:
             client = OpenAI(
@@ -248,7 +291,7 @@ class BOZO_TXT_MD:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("text_content",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO/功能"
 
     def execute(self, custom_text, local_path=None, remote_url=None):
         try:
@@ -297,7 +340,7 @@ class BozoPrintOS:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("PRINT_OS",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
     
     def execute(self, PULL_OS):
         try:
@@ -357,7 +400,7 @@ class BOZO_Node:
         return {
             "required": {
                 "model": ("STRING", {
-                    "default": "Qwen/Qwen3-235B-A22B",
+                    "default": "Qwen/Qwen3-30B-A3B-Thinking-2507",
                     "multiline": False
                 }),
                 "content": ("STRING", {
@@ -381,7 +424,7 @@ class BOZO_Node:
     RETURN_TYPES = ("STRING", "STRING",)
     RETURN_NAMES = ("thinking", "answer",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO"
 
     def execute(self, model, content, enable_thinking, thinking_budget):
         if self.api_key is None:

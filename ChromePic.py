@@ -11,7 +11,7 @@ class PicChrome:
     RETURN_TYPES = ("STRING", "STRING",)
     RETURN_NAMES = ("status", "image_path",)
     FUNCTION = "open_image"
-    CATEGORY = "BOZO/HTML"
+    CATEGORY = "🇨🇳BOZO/HTML"
     
     def __init__(self):
         self.output_dir = os.path.join(folder_paths.get_output_directory(), 'chrome_view')
@@ -96,7 +96,7 @@ class PicSChrome:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("status",)
     FUNCTION = "open_images"
-    CATEGORY = "BOZO/HTML"
+    CATEGORY = "🇨🇳BOZO/HTML"
     
     def __init__(self):
         self.output_dir = os.path.join(folder_paths.get_output_directory(), 'chrome_view')

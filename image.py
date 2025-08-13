@@ -10,7 +10,9 @@ from io import BytesIO
 import numpy as np
 import time
 import torch
+import torch.nn.functional as F
 import urllib.request
+import cv2
 
 # 必要的常量定义
 BOOLEAN = ("BOOLEAN", {"default": True})
@@ -62,7 +64,8 @@ class BImageSaveWithExtraMetadata(SaveImage):
     RETURN_TYPES = ("METADATA_RAW",)
     RETURN_NAMES = ("Metadata RAW",)
     OUTPUT_NODE = True
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
+    OUTPUT_NODE = True
     FUNCTION = "execute"
 
     def execute(self, image=None, filename_prefix="ComfyUI", with_workflow=True, metadata_extra=None, prompt=None, extra_pnginfo=None):
@@ -123,7 +126,7 @@ class BImageYunSuan:
     RETURN_TYPES = ("STRING", "INT", "FLOAT")
     RETURN_NAMES = ("result", "result_int", "result_float")
     FUNCTION = "execute"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO/PIC"
 
     def execute(self, width, height, formula):
         try:
@@ -216,7 +219,7 @@ class PicRun:
     RETURN_TYPES = ("IMAGE", "STRING", "STRING", "INT", "FLOAT", "STRING", "INT", "INT", "INT", "STRING")
     RETURN_NAMES = ("image", "image_url", "model", "steps", "guidance", "sampler", "width", "height", "seed", "prompt")
     FUNCTION = "execute"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO/X"
 
     def _download_image(self, url):
         """从URL下载图像并转换为tensor"""
@@ -312,3 +315,393 @@ class PicRun:
             logger.error(f"API 调用错误: {e}")
             empty_image = torch.zeros((1, 64, 64, 3))
             return (empty_image, f"API 调用错误: {str(e)}", "", 0, 0.0, "", 0, 0, 0, "")
+
+
+class B_quyu:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "original_image": ("IMAGE",),
+                "screenshot_image": ("IMAGE",)
+            }
+        }
+
+    RETURN_TYPES = ("INT", "INT")
+    RETURN_NAMES = ("X_direction", "Y_direction")
+    FUNCTION = "execute"
+    CATEGORY = "🇨🇳BOZO/PIC"
+
+    def execute(self, original_image, screenshot_image):
+
+        # 转换为numpy数组并调整通道顺序
+        def tensor_to_cv2(tensor):
+            # 去除批次维度，转换为HWC
+            arr = tensor.squeeze(0).cpu().numpy()
+            # 转换为0-255 uint8
+            arr = (arr * 255).astype(np.uint8)
+            # RGB转BGR
+            return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+
+        try:
+            original = tensor_to_cv2(original_image)
+            screenshot = tensor_to_cv2(screenshot_image)
+
+            # 检查截图尺寸是否超过原始图
+            if screenshot.shape[0] > original.shape[0] or screenshot.shape[1] > original.shape[1]:
+                return (0, 0)
+
+            # 模板匹配
+            result = cv2.matchTemplate(original, screenshot, cv2.TM_CCOEFF_NORMED)
+            _, _, _, max_loc = cv2.minMaxLoc(result)
+            x, y = max_loc
+
+            return (x, y)
+        except Exception as e:
+            print(f"Error in B_quyu.execute: {e}")
+            return (0, 0)
+
+
+class B_yuhua:
+    CATEGORY = "🇨🇳BOZO/PIC"
+    
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "left": ("INT", {"default": 50, "min": 0, "max": 1000, "step": 1}),
+                "top": ("INT", {"default": 50, "min": 0, "max": 1000, "step": 1}),
+                "right": ("INT", {"default": 50, "min": 0, "max": 1000, "step": 1}),
+                "bottom": ("INT", {"default": 50, "min": 0, "max": 1000, "step": 1}),
+            }
+        }
+    
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "yuhua_process"
+    DESCRIPTION = "图片边缘羽化处理，通过非线性变换实现平滑自然的透明渐变效果"
+    
+    def create_feather_mask(self, width, height, left, top, right, bottom):
+        """创建羽化遮罩"""
+        # 创建基础遮罩
+        mask = np.ones((height, width), dtype=np.float32)
+        
+        # 创建距离场
+        distance_field = np.zeros((height, width), dtype=np.float32)
+        
+        # 计算每个像素到边缘的最小距离
+        for y in range(height):
+            for x in range(width):
+                # 计算到四边的距离
+                dist_left = x if left > 0 else float('inf')
+                dist_top = y if top > 0 else float('inf')
+                dist_right = (width - 1 - x) if right > 0 else float('inf')
+                dist_bottom = (height - 1 - y) if bottom > 0 else float('inf')
+                
+                # 取最小距离
+                min_dist = min(dist_left, dist_top, dist_right, dist_bottom)
+                
+                # 如果在羽化区域内
+                if min_dist < max(left, top, right, bottom):
+                    distance_field[y, x] = min_dist
+        
+        # 应用非线性变换优化过渡效果 (使用平滑的S型曲线)
+        max_feather = max(left, top, right, bottom)
+        if max_feather > 0:
+            # 归一化距离到0-1范围
+            normalized_distance = np.clip(distance_field / max_feather, 0, 1)
+            # 应用平滑的S型曲线: 3t² - 2t³ (平滑step函数)
+            smooth_factor = 3 * normalized_distance * normalized_distance - 2 * normalized_distance * normalized_distance * normalized_distance
+            # 转换为透明度 (边缘为0，中心为1)
+            mask = 1 - smooth_factor
+        
+        return mask
+    
+    def yuhua_process(self, image, left, top, right, bottom):
+        # 确保输入值不为负数
+        left, top, right, bottom = max(0, left), max(0, top), max(0, right), max(0, bottom)
+        
+        # 如果所有羽化值都为0，直接返回原图
+        if left == 0 and top == 0 and right == 0 and bottom == 0:
+            return (image,)
+        
+        # 将tensor转换为numpy数组
+        batch_size, height, width, channels = image.shape
+        output_images = []
+        
+        for i in range(batch_size):
+            # 获取单张图片
+            img_tensor = image[i]
+            
+            # 转换为numpy并确保是float32
+            img_np = img_tensor.cpu().numpy().astype(np.float32)
+            
+            # 如果是RGB图片，添加alpha通道
+            if channels == 3:
+                # 创建RGBA图像
+                rgb_img = (img_np * 255).astype(np.uint8)
+                pil_img = Image.fromarray(rgb_img, 'RGB')
+                rgba_img = pil_img.convert('RGBA')
+                img_with_alpha = np.array(rgba_img).astype(np.float32) / 255.0
+            else:
+                # 已经是RGBA格式
+                img_with_alpha = img_np.copy()
+            
+            # 创建羽化遮罩
+            feather_mask = self.create_feather_mask(width, height, left, top, right, bottom)
+            
+            # 应用羽化遮罩到alpha通道
+            img_with_alpha[:, :, 3] = img_with_alpha[:, :, 3] * feather_mask
+            
+            # 转换回tensor并添加到批次
+            output_img = torch.from_numpy(img_with_alpha).unsqueeze(0)
+            output_images.append(output_img)
+        
+        # 合并批次
+        result = torch.cat(output_images, dim=0)
+        
+        # 确保输出格式符合ComfyUI要求 (转换为uint8类型的tensor)
+        return (result,)
+
+
+class B_touming:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image": ("IMAGE",),
+                "left": ("INT", {"default": 150, "min": 0, "max": 1000, "step": 1}),
+                "top": ("INT", {"default": 150, "min": 0, "max": 1000, "step": 1}),
+                "right": ("INT", {"default": 150, "min": 0, "max": 1000, "step": 1}),
+                "bottom": ("INT", {"default": 150, "min": 0, "max": 1000, "step": 1}),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "process"
+    CATEGORY = "🇨🇳BOZO/PIC"
+
+    def process(self, image, left, top, right, bottom):
+        # 处理输入图像
+        batch_size, height, width, channels = image.shape
+        
+        result_batch = []
+        
+        for i in range(batch_size):
+            # 获取单张图片
+            img_tensor = image[i]  # (H, W, C)
+            
+            # 转换为numpy数组
+            img_np = img_tensor.cpu().numpy()  # (H, W, C)
+            
+            # 确保值在0-1范围内
+            img_np = np.clip(img_np, 0, 1)
+            
+            # 如果是RGB图像，转换为RGBA（添加alpha通道）
+            if channels == 3:
+                # 创建alpha通道，初始化为全不透明
+                alpha_channel = np.ones((height, width, 1), dtype=np.float32)
+                img_rgba = np.concatenate([img_np, alpha_channel], axis=2)  # (H, W, 4)
+            else:
+                img_rgba = img_np.copy()  # 已经是RGBA格式
+            
+            # 创建alpha遮罩
+            alpha_mask = np.ones((height, width), dtype=np.float32)
+            
+            # 为每个边缘创建渐变透明效果
+            self._create_smooth_gradient(alpha_mask, left, top, right, bottom, height, width)
+            
+            # 应用alpha遮罩到alpha通道
+            img_rgba[:, :, 3] = alpha_mask
+            
+            # 转换为tensor
+            result_tensor = torch.from_numpy(img_rgba).float()
+            result_batch.append(result_tensor)
+        
+        # 合并批次
+        result = torch.stack(result_batch, dim=0)
+        
+        return (result,)
+
+    def _create_smooth_gradient(self, alpha_mask, left, top, right, bottom, height, width):
+        """创建平滑的边缘透明渐变遮罩"""
+        # 左边缘渐变
+        if left > 0:
+            for x in range(min(left, width)):
+                # 使用平滑的衰减函数
+                t = x / left
+                # 使用smoothstep函数创建平滑过渡: 3t² - 2t³
+                gradient_value = 3 * t * t - 2 * t * t * t
+                current_alpha = alpha_mask[:, x]
+                alpha_mask[:, x] = current_alpha * gradient_value
+        
+        # 右边缘渐变
+        if right > 0:
+            for x in range(max(0, width - right), width):
+                t = (width - 1 - x) / right
+                gradient_value = 3 * t * t - 2 * t * t * t
+                current_alpha = alpha_mask[:, x]
+                alpha_mask[:, x] = current_alpha * gradient_value
+        
+        # 上边缘渐变
+        if top > 0:
+            for y in range(min(top, height)):
+                t = y / top
+                gradient_value = 3 * t * t - 2 * t * t * t
+                current_alpha = alpha_mask[y, :]
+                alpha_mask[y, :] = current_alpha * gradient_value
+        
+        # 下边缘渐变
+        if bottom > 0:
+            for y in range(max(0, height - bottom), height):
+                t = (height - 1 - y) / bottom
+                gradient_value = 3 * t * t - 2 * t * t * t
+                current_alpha = alpha_mask[y, :]
+                alpha_mask[y, :] = current_alpha * gradient_value
+
+                
+class B_hebin:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "background_image": ("IMAGE",),
+                "watermark_image": ("IMAGE",),
+                "position": (["Centered", "Up", "Down", "Left", "Right", "Up Left", "Up Right", "Down Left", "Down Right"], {"default": "Up Left"}),
+                "x_direction": ("INT", {"default": 0, "min": -10000, "max": 10000, "step": 1}),
+                "y_direction": ("INT", {"default": 0, "min": -10000, "max": 10000, "step": 1}),
+            },
+            "optional": {
+                "mask": ("MASK",),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "composite"
+    CATEGORY = "🇨🇳BOZO/PIC"
+
+    def composite(self, background_image, watermark_image, position, x_direction, y_direction, mask=None):
+        # 获取图像尺寸
+        bg_batch, bg_h, bg_w, bg_c = background_image.shape
+        wm_batch, wm_h, wm_w, wm_c = watermark_image.shape
+        
+        # 确定批次大小
+        batch_size = max(bg_batch, wm_batch)
+        
+        result_batch = []
+        
+        for i in range(batch_size):
+            # 获取当前批次的图像
+            bg_idx = min(i, bg_batch - 1)
+            wm_idx = min(i, wm_batch - 1)
+            
+            bg_img = background_image[bg_idx].clone()  # (H, W, C)
+            wm_img = watermark_image[wm_idx].clone()   # (H, W, C)
+            
+            # 确保背景图是RGB格式
+            if bg_c == 4:
+                bg_rgb = bg_img[:, :, :3]  # 提取RGB通道
+            else:
+                bg_rgb = bg_img
+            
+            # 确保水印图有alpha通道
+            if wm_c == 3:
+                # 为RGB水印图添加全透明通道
+                alpha_channel = torch.ones((wm_h, wm_w, 1), dtype=wm_img.dtype, device=wm_img.device)
+                wm_rgba = torch.cat([wm_img, alpha_channel], dim=2)  # (H, W, 4)
+            else:
+                wm_rgba = wm_img  # 已经是RGBA格式
+            
+            # 如果提供了mask，使用mask作为alpha通道
+            if mask is not None:
+                mask_batch, mask_h, mask_w = mask.shape
+                mask_idx = min(i, mask_batch - 1)
+                mask_tensor = mask[mask_idx]  # (H, W)
+                
+                # 调整mask尺寸以匹配水印图
+                if mask_h != wm_h or mask_w != wm_w:
+                    mask_tensor = mask_tensor.unsqueeze(0).unsqueeze(0)  # (1, 1, H, W)
+                    mask_tensor = torch.nn.functional.interpolate(
+                        mask_tensor, size=(wm_h, wm_w), mode='bilinear', align_corners=False
+                    ).squeeze(0).squeeze(0)  # (H, W)
+                
+                # 使用mask作为alpha通道
+                wm_rgba[:, :, 3] = mask_tensor
+            
+            # 计算水印位置
+            x_pos, y_pos = self._calculate_position(position, bg_w, bg_h, wm_w, wm_h, x_direction, y_direction)
+            
+            # 确保位置在有效范围内
+            x_pos = max(0, min(x_pos, bg_w))
+            y_pos = max(0, min(y_pos, bg_h))
+            
+            # 执行图像合成
+            result_img = self._composite_images(bg_rgb, wm_rgba, x_pos, y_pos)
+            
+            result_batch.append(result_img)
+        
+        # 合并批次
+        result = torch.stack(result_batch, dim=0)
+        
+        return (result,)
+
+    def _calculate_position(self, position, bg_w, bg_h, wm_w, wm_h, x_direction, y_direction):
+        """计算水印位置"""
+        positions = {
+            "Centered": ((bg_w - wm_w) // 2, (bg_h - wm_h) // 2),
+            "Up": ((bg_w - wm_w) // 2, 0),
+            "Down": ((bg_w - wm_w) // 2, bg_h - wm_h),
+            "Left": (0, (bg_h - wm_h) // 2),
+            "Right": (bg_w - wm_w, (bg_h - wm_h) // 2),
+            "Up Left": (0, 0),
+            "Up Right": (bg_w - wm_w, 0),
+            "Down Left": (0, bg_h - wm_h),
+            "Down Right": (bg_w - wm_w, bg_h - wm_h),
+        }
+        
+        base_x, base_y = positions.get(position, (0, 0))
+        
+        # 应用方向偏移
+        final_x = base_x + x_direction
+        final_y = base_y + y_direction
+        
+        return final_x, final_y
+
+    def _composite_images(self, bg_img, wm_img, x_pos, y_pos):
+        """合成图像"""
+        bg_h, bg_w, bg_c = bg_img.shape
+        wm_h, wm_w, wm_c = wm_img.shape
+        
+        # 创建结果图像（复制背景）
+        result_img = bg_img.clone()
+        
+        # 计算实际绘制区域
+        draw_x_start = max(0, x_pos)
+        draw_y_start = max(0, y_pos)
+        draw_x_end = min(bg_w, x_pos + wm_w)
+        draw_y_end = min(bg_h, y_pos + wm_h)
+        
+        # 计算水印的对应区域
+        wm_x_start = max(0, -x_pos)
+        wm_y_start = max(0, -y_pos)
+        wm_x_end = wm_x_start + (draw_x_end - draw_x_start)
+        wm_y_end = wm_y_start + (draw_y_end - draw_y_start)
+        
+        if draw_x_end > draw_x_start and draw_y_end > draw_y_start:
+            # 提取水印区域
+            wm_region = wm_img[wm_y_start:wm_y_end, wm_x_start:wm_x_end, :]  # (H, W, 4)
+            bg_region = result_img[draw_y_start:draw_y_end, draw_x_start:draw_x_end, :]  # (H, W, 3)
+            
+            # 获取alpha通道并扩展为3通道
+            alpha = wm_region[:, :, 3:4]  # (H, W, 1)
+            
+            # 提取水印的RGB通道
+            wm_rgb = wm_region[:, :, :3]  # (H, W, 3)
+            
+            # 执行alpha混合
+            blended = alpha * wm_rgb + (1 - alpha) * bg_region
+            
+            # 将合成结果写回背景图
+            result_img[draw_y_start:draw_y_end, draw_x_start:draw_x_end, :] = blended
+        
+        return result_img

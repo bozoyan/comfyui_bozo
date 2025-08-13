@@ -1,4 +1,6 @@
+httpx[socks]
 requests
+ntplib
 openai
 addict
 #opencv-python==4.10.0.84  4.11.0.86
@@ -23,6 +25,15 @@ onnxruntime
 markdown
 playwright
 beautifulsoup4
+openpyxl
+chardet
+pytz
+
+
+# volcengine-python-sdk
+# 豆包 API 的 Python SDK，包含 Ark 相关依赖  pip install 'volcengine-python-sdk[ark]'
+volcengine-python-sdk[ark]
+zhipuai
 
 #直接复制SOFT包
 #alibabacloud_imageseg20191230>=3.0.0, <4.0.0

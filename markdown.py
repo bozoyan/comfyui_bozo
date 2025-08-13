@@ -10,7 +10,7 @@ class MarkmapNode:
     RETURN_TYPES = ("STRING", "STRING",)
     RETURN_NAMES = ("file_path", "title",)
     FUNCTION = "create_markmap"
-    CATEGORY = "BOZO/HTML"
+    CATEGORY = "🇨🇳BOZO/HTML"
     
     def __init__(self):
         self.output_dir = os.path.join(folder_paths.get_output_directory(), 'markmap')
@@ -152,7 +152,7 @@ class ReadHtmlNode:
     RETURN_TYPES = ("STRING", "STRING",)
     RETURN_NAMES = ("content", "name",)
     FUNCTION = "read_html"
-    CATEGORY = "BOZO/HTML"
+    CATEGORY = "🇨🇳BOZO/HTML"
     
     def __init__(self):
         pass
@@ -187,7 +187,7 @@ class HtmlToImageNode:
     RETURN_TYPES = ("STRING", "IMAGE",)
     RETURN_NAMES = ("image_path", "image",)
     FUNCTION = "convert_to_image"
-    CATEGORY = "BOZO/HTML"
+    CATEGORY = "🇨🇳BOZO/HTML"
     
     def __init__(self):
         self.output_dir = os.path.join(folder_paths.get_output_directory(), 'html2img')
@@ -281,7 +281,7 @@ class BozoSaveMd:
     RETURN_TYPES = ("STRING", "STRING",)
     RETURN_NAMES = ("MD_Path", "filename",)
     FUNCTION = "save_markdown"
-    CATEGORY = "BOZO/HTML"
+    CATEGORY = "🇨🇳BOZO/HTML"
     OUTPUT_NODE = True
     
     def __init__(self):
@@ -354,7 +354,7 @@ class BozoSaveHTML:
     RETURN_TYPES = ("STRING", "STRING", "STRING",)
     RETURN_NAMES = ("HTML_Path", "filename", "info",)
     FUNCTION = "save_html"
-    CATEGORY = "BOZO/HTML"
+    CATEGORY = "🇨🇳BOZO/HTML"
     OUTPUT_NODE = True
     
     def __init__(self):

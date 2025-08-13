@@ -18,7 +18,7 @@ class GeminiImageGenerator:
             "required": {
                 "prompt": ("STRING", {"multiline": True}),
                 "api_key": ("STRING", {"default": "", "multiline": False}),
-                "model": (["models/gemini-2.0-flash-exp"], {"default": "models/gemini-2.0-flash-exp"}),
+                "model": (["models/gemini-2.0-flash-exp","models/gemini-2.0-pro-preview-03-25","models/gemini-2.0-pro-exp-02-05"], {"default": "models/gemini-2.0-flash-exp"}),
                 "aspect_ratio": ([
                     "Free (自由比例)",
                     "Landscape (横屏)",
@@ -36,7 +36,7 @@ class GeminiImageGenerator:
     RETURN_TYPES = ("IMAGE", "STRING")
     RETURN_NAMES = ("image", "API Respond")
     FUNCTION = "generate_image"
-    CATEGORY = "BOZO"
+    CATEGORY = "🇨🇳BOZO/X"
     
     def __init__(self):
         """初始化日志系统和API密钥存储"""

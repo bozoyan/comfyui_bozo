@@ -12,10 +12,11 @@ import os
 import re
 from openai import OpenAI
 from io import BytesIO
-
+import base64
+import time
 
 class ImagePathLoader:
-    """加载图像并获取其绝对路径"""
+    """加载图像并获取其绝对路径，保存为 webp"""
     
     @classmethod
     def INPUT_TYPES(cls):
@@ -31,10 +32,30 @@ class ImagePathLoader:
             }
         }
     
-    RETURN_TYPES = ("IMAGE", "STRING", "INT", "INT",)
-    RETURN_NAMES = ("image", "image_path", "width", "height",)
+    RETURN_TYPES = ("IMAGE", "STRING", "INT", "INT", "STRING", "IMAGE")
+    RETURN_NAMES = ("image", "image_path", "width", "height", "base64_webp", "webp_image")
     FUNCTION = "load_image"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
+
+    def encode_image_b64(self, image):
+        i = 255. * image.cpu().numpy()[0]
+        img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+
+        lsize = np.max(img.size)
+        factor = 1
+        while lsize / factor > 2048:
+            factor *= 2
+        img = img.resize((img.size[0] // factor, img.size[1] // factor))
+
+        image_path = f'{time.time()}.webp'
+        img.save(image_path, 'WEBP')
+
+        with open(image_path, "rb") as image_file:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+        # print(img_base64)
+        os.remove(image_path)
+        return base64_image
     
     def download_image(self, url):
         try:
@@ -75,14 +96,14 @@ class ImagePathLoader:
                 image_path = self.download_image(image_url)
                 if not image_path:
                     print("下载图片失败")
-                    return (None, "", 0, 0)
+                    return (None, "", 0, 0, "", None)
             else:
                 # 使用本地图片
                 image_path = folder_paths.get_annotated_filepath(image)
             
             if not os.path.exists(image_path):
                 print(f"警告: 文件不存在 {image_path}")
-                return (None, "", 0, 0)
+                return (None, "", 0, 0, "", None)
             
             # 加载图像
             i = Image.open(image_path)
@@ -93,11 +114,27 @@ class ImagePathLoader:
             
             # 获取图片尺寸
             width, height = i.size
-            return (image, image_path, width, height)
+            
+            # 生成base64编码的webp图片
+            base64_webp = self.encode_image_b64(image)
+            
+            # 创建并保存webp图像张量到input目录
+            webp_image = image.clone()
+            input_dir = folder_paths.get_input_directory()
+            webp_filename = f"webp_output_{int(time.time())}.webp"
+            webp_path = os.path.join(input_dir, webp_filename)
+            
+            # 将张量转换为PIL图像并保存为webp
+            i = 255. * webp_image.cpu().numpy()[0]
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            img.save(webp_path, 'WEBP')
+            
+            # 修改返回值，确保返回base64_webp数据
+            return (image, image_path, width, height, base64_webp, webp_image)
             
         except Exception as e:
             print(f"加载图像失败: {str(e)}")
-            return (None, "", 0, 0)
+            return (None, "", 0, 0, "", None)
 
 class PNGInfoReader:
     """读取 PNG 图片中的元数据信息"""
@@ -118,7 +155,7 @@ class PNGInfoReader:
     RETURN_NAMES = ("metadata", "filename", "positive_prompt", "negative_prompt", "steps", "sampler", "cfg_scale", 
                    "clip_skip", "seed", "model", "lora_info", "vae", "hires_upscaler")
     FUNCTION = "read_pnginfo"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
     
     def read_pnginfo(self, image_path="", as_json=True):
         try:
@@ -244,7 +281,7 @@ class PNGInfoExtractor:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("value",)
     FUNCTION = "extract_info"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
     
     def extract_info(self, metadata, key):
         try:
@@ -301,7 +338,7 @@ class ImageJiexi:
     RETURN_TYPES = ("STRING", "IMAGE",)
     RETURN_NAMES = ("prompt", "preview",)
     FUNCTION = "analyze_image"
-    CATEGORY = "BOZO/PIC"
+    CATEGORY = "🇨🇳BOZO/PIC"
 
     def analyze_image(self, image_url, model, prompt_template):
         try:

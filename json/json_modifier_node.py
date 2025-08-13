@@ -1,7 +1,7 @@
 import json
 from typing import Union, Any
 
-class JSONModifierNode:
+class B_JSONModifierNode:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -15,7 +15,7 @@ class JSONModifierNode:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("modified_json",)
     FUNCTION = "modify_json"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
 
     def modify_json(self, json_input: str, path: str, new_value: str) -> tuple[str]:
         try:

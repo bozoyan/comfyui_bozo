@@ -1,7 +1,7 @@
 import json
 from typing import Union, Any
 
-class JSONMergeNode:
+class B_JSONMergeNode:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -15,7 +15,7 @@ class JSONMergeNode:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("merged_json",)
     FUNCTION = "merge_json"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
 
     def merge_json(self, json_input_1: str, json_input_2: str, merge_strategy: str) -> tuple[str]:
         try:

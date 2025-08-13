@@ -54,7 +54,7 @@ class X_API_Node(X_API_Base):
     RETURN_TYPES = ("STRING", "STRING",)
     RETURN_NAMES = ("response", "prompt",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/X"
 
     # 添加必要的节点属性
     NAME = "X AI Chat"
@@ -82,7 +82,7 @@ class X_API_Node(X_API_Base):
                     {"role": "system", "content": system_content},
                     {"role": "user", "content": user_content}
                 ],
-                "model": "grok-3-mini-latest",
+                "model": "grok-3-mini",
                 "stream": False,
                 "temperature": temperature
             }
@@ -144,7 +144,7 @@ class X_API_Images(X_API_Base):
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("image_urls", "revised_prompt")
     FUNCTION = "execute"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/X"
 
     def execute(self, prompt, image_count, response_format):
         try:
@@ -234,7 +234,7 @@ class X_API_Image(X_API_Base):
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("response",)
     FUNCTION = "execute"
-    CATEGORY = "BOZO/X"
+    CATEGORY = "🇨🇳BOZO/X"
     
     # 添加必要的节点属性
     NAME = "X AI Vision"
@@ -298,7 +298,7 @@ class X_API_Image(X_API_Base):
             }]
 
             completion = client.chat.completions.create(
-                model="grok-2-vision-latest",
+                model="grok-4-0709",
                 messages=messages,
                 temperature=temperature
             )

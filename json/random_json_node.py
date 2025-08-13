@@ -2,7 +2,7 @@ import json
 import random
 from typing import Union, Any
 
-class RandomJSONValueNode:
+class B_RandomJSONValueNode:
     @classmethod
     def INPUT_TYPES(cls):
         return {
@@ -15,7 +15,7 @@ class RandomJSONValueNode:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("random_value",)
     FUNCTION = "get_random_value"
-    CATEGORY = "BOZO/JSON"
+    CATEGORY = "🇨🇳BOZO/JSON"
 
     def get_random_value(self, json_input: str, max_depth: int) -> tuple[str]:
         try:
