@@ -808,7 +808,7 @@ Python库的安装从requirements.txt使用 pip 安装。可以先执行
 
 ## 📬 **联系与支持**
 
-- **Issues**：[提交问题](https://github.com/bozoyan/AsrTools/issues)
+- **Issues**：[提交问题](https://github.com/bozoyan/comfyui_bozo/issues)
 
 感谢您使用 **comfyui_bozo**！🎉  
 
